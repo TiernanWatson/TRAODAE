@@ -26,6 +26,10 @@ OUTPUT: int
 
 int Calculate_Parent (int b, vector <unsigned int> Hierarchy)
 {
+	if (b == 1)
+		return 0;
+	else if (b == 10)
+		return 1;
     if (b != 0)
     {
 		int RootBone = 0;

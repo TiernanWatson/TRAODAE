@@ -28,6 +28,9 @@ OUTPUT: ofstream &out
 #include "Classes.h"
 #include "FBX/FBX_Functions.h"
 
+//constexpr unsigned long long k_anim_start = 1924423250;
+constexpr unsigned long long k_anim_start = 1539538600;
+
 
 void FBX_Write_Animation (int a,														// Numero animazione selezionata
 						  vector <Animation_info> &Ani_header,							// Contiene informazioni generali sull'animazione corrente
@@ -37,12 +40,12 @@ void FBX_Write_Animation (int a,														// Numero animazione selezionata
 						  ofstream &out)												// Flusso di output del file FBX
 {
 	/////////////////////// SCRITTURA ANIMATIONSTACK
-	unsigned long long temp = Ani_header[a].nFrames * 1924423250;
+	unsigned long long temp = Ani_header[a].nFrames * FBXframe1;
     out << "	AnimationStack: " << nodeID(98,a) << ", \"AnimStack::" << Ani_header[a].name << "\", \"\" {\n";
 	out << "		Properties70:  {\n";
-	out << "			P: \"LocalStart\", \"KTime\", \"Time\", \"\"," << 1924423250 << endl;
+	out << "			P: \"LocalStart\", \"KTime\", \"Time\", \"\"," << FBXframe1 << endl;
 	out << "			P: \"LocalStop\", \"KTime\", \"Time\", \"\"," << temp << endl;
-	out << "			P: \"ReferenceStart\", \"KTime\", \"Time\", \"\"," << 1924423250 << endl;
+	out << "			P: \"ReferenceStart\", \"KTime\", \"Time\", \"\"," << FBXframe1 << endl;
 	out << "			P: \"ReferenceStop\", \"KTime\", \"Time\", \"\"," << temp << endl;
 	out << "		}\n";
 	out << "	}\n";

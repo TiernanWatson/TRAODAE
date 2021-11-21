@@ -43,6 +43,9 @@ void CHR_Read_Mesh2 (MESH2_CLASS *mesh2, vector <matrix4x4> &SKquat, ifstream &c
     chrfile.read(reinterpret_cast<char*>(&mesh2->Bone), sizeof(chr_mesh2_header.Bone_ref));							// Legge la bone di appartenenza
     chrfile.read(reinterpret_cast<char*>(&chr_mesh2_header.Unknown3), sizeof(chr_mesh2_header.Unknown3));
     chrfile.read(reinterpret_cast<char*>(&mesh2->nV), sizeof(chr_mesh2_header.nVertices));							// Legge il numero di vertici
+
+	// For root bone
+	mesh2->Bone++;
     
 	mesh2->name = GetMeshName(chr_mesh2_header.ID, &mesh2->hashed);
     

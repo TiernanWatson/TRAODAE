@@ -74,7 +74,6 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
 
 	for (unsigned int a = 0; a < cal_header.nAnims; a++)	// LETTURA HEADER ANIMAZIONI
     {
-		AnimationCurveNode Root;								// Classe contenente tutte le informazioni sul root motion dell'animazione
 		int reading_offset = 0;
 		UI_ProgressBar(a, cal_header.nAnims, 45, " Reading animations...                         ");
         calfile.seekg(Ani_header[a].Pointer_h);
@@ -88,6 +87,8 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
         calfile.read(reinterpret_cast<char*>(&cal_anim_raw_header.Bones_offset), sizeof(cal_anim_raw_header.Bones_offset));
 		calfile.read(reinterpret_cast<char*>(&cal_anim_raw_header.Transform_type), sizeof(cal_anim_raw_header.Transform_type));
 		calfile.read(reinterpret_cast<char*>(&cal_anim_raw_header.Pointer), sizeof(cal_anim_raw_header.Pointer));
+
+		AnimationCurveNode& Root = Ani_curvenode[a][0];								// Classe contenente tutte le informazioni sul root motion dell'animazione
 
 		///////////////////    LETTURA KEYFRAMES ROOT MOTION
 		if (Export_RootMotion)
@@ -122,9 +123,9 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
 			}
 		}
 
-        for (unsigned int b = 0; b < Ani_header[a].nBones; b++)
+        for (unsigned int b = 1; b < Ani_header[a].nBones; b++)
         {
-            calfile.seekg(cal_anim_raw_header.Bones_offset + 8 * b);	// Posiziona ad ogni ciclo il punto di lettura al Transform_type della bone b (salta 8 bytes per bone)
+            calfile.seekg(cal_anim_raw_header.Bones_offset + 8 * (b - 1));	// Posiziona ad ogni ciclo il punto di lettura al Transform_type della bone b (salta 8 bytes per bone)
             calfile.read(reinterpret_cast<char*>(&cal_anim_raw_bones.Transform_type), sizeof(cal_anim_raw_bones.Transform_type));	// Legge il Transform_type
             calfile.read(reinterpret_cast<char*>(&cal_anim_raw_bones.Pointer), sizeof(cal_anim_raw_bones.Pointer));					// Legge il pointer del primo chunk
             reading_offset = 0;
@@ -134,7 +135,7 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
             {
                 Ani_curvenode[a][b].tX_flag = true;
                 calfile.seekg(cal_anim_raw_bones.Pointer + reading_offset);
-				if (b == 0 && Export_RootMotion && (Root.tX_flag || Root.rZ_flag))
+				if (b == 1 && Export_RootMotion && (Root.tX_flag || Root.rZ_flag))
 					Ani_curvenode[a][b].tX = CAL_Get_TRS_Keyframes_2(calfile, Ani_header[a].nFrames, 0.25f);
 				else
 					Ani_curvenode[a][b].tX = CAL_Get_TRS_Keyframes(calfile, Ani_header[a].nFrames, 0.25f);
@@ -144,7 +145,7 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
             {
                 Ani_curvenode[a][b].tY_flag = true;
                 calfile.seekg(cal_anim_raw_bones.Pointer + reading_offset);
-				if (b == 0 && Export_RootMotion && (Root.tY_flag || Root.rZ_flag))
+				if (b == 1 && Export_RootMotion && (Root.tY_flag || Root.rZ_flag))
 					Ani_curvenode[a][b].tY = CAL_Get_TRS_Keyframes_2(calfile, Ani_header[a].nFrames, 0.25f);
 				else
 					Ani_curvenode[a][b].tY = CAL_Get_TRS_Keyframes(calfile, Ani_header[a].nFrames, 0.25f);
@@ -154,7 +155,7 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
             {
                 Ani_curvenode[a][b].tZ_flag = true;
                 calfile.seekg(cal_anim_raw_bones.Pointer + reading_offset);
-                if (b == 0 && Export_RootMotion && Root.tZ_flag)
+                if (b == 1 && Export_RootMotion && Root.tZ_flag)
 					Ani_curvenode[a][b].tZ = CAL_Get_TRS_Keyframes_2(calfile, Ani_header[a].nFrames, 0.25f);
 				else
 					Ani_curvenode[a][b].tZ = CAL_Get_TRS_Keyframes(calfile, Ani_header[a].nFrames, 0.25f);
@@ -250,7 +251,7 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
                 }
 
 			///////////////////		APPLICAZIONE ROOT MOTION A BONE HIP
-			if (b == 0 && Export_RootMotion)
+			if (b == 1 && Export_RootMotion)
 			{
 				if (Root.rZ_flag)		// Se il root motion include la rotazione Z è necessario ruotare le traslazioni del root motion e della bone HIP dello scheletro
 				{
@@ -282,7 +283,7 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
 						}
 					}
 
-					if (Ani_curvenode[a][b].tX_flag || Ani_curvenode[a][b].tY_flag)		// Corregge le traslazioni della bone HIP dello scheletro
+					/*if (Ani_curvenode[a][b].tX_flag || Ani_curvenode[a][b].tY_flag)		// Corregge le traslazioni della bone HIP dello scheletro
 					{
 						if (!Ani_curvenode[a][b].tX_flag)								// Crea gli slot, se assenti, per i nuovi valori di traslazione
 							Ani_curvenode[a][b].tX = APB_Fill_AnimationCurveData(0, Root.rZ.KeyValueFloat.size());
@@ -297,7 +298,7 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
 							newHip = mathRot(oldHip, mathRotZ(UnitMatrix, Root.rZ.KeyValueFloat[f]));
 							Ani_curvenode[a][b].tX.KeyValueFloat[f] = newHip.xt;		Ani_curvenode[a][b].tY.KeyValueFloat[f] = newHip.yt;
 						}
-					}
+					}*/
 				}
 
 				// Questo pezzo aggiunge al valore di ogni keyframe il valore del precedente. Questo perchè le traslazioni sono salvate per incrementi e non per valori assoluti
@@ -322,7 +323,7 @@ void CAL_Read (ifstream &calfile, vector <Animation_info> &Ani_header, vector < 
 					for (unsigned int f = 1; f < Root.tZ.KeyValueFloat.size(); f++)		// Somma ad ogni traslazione quella del frame precedente (i singoli valori sono incrementi)
 						Root.tZ.KeyValueFloat[f] += Root.tZ.KeyValueFloat[f-1];
 				}
-				APB_Combine_AnimLayers(&Ani_curvenode[a][b], Root);						// Aggiunge alla bone HIP il Root Motion
+				//APB_Combine_AnimLayers(&Ani_curvenode[a][b], Root);						// Aggiunge alla bone HIP il Root Motion
 			}
         }
     }

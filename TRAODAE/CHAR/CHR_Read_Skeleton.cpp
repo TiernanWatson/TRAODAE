@@ -50,7 +50,16 @@ void CHR_Read_Skeleton (unsigned int nBONES,					// Numero di bones dello schele
     //companion << "DO NOT MODIFY THIS FILE!" << endl << endl;
     //companion << charname << " " << nBONES << endl;*/
 
-    for (unsigned int b = 0; b < nBONES; b++)				// Questo ciclo legge ogni bone e ne applica le trasformazioni mano a mano
+	Hierarchy[0] = 0;
+	SKquat[0].row1[0] = 1;		SKquat[0].row1[1] = 0;		SKquat[0].row1[2] = 0;		SKquat[0].row1[3] = 0;
+	SKquat[0].row2[0] = 0;		SKquat[0].row2[1] = 1;		SKquat[0].row2[2] = 0;		SKquat[0].row2[3] = 0;
+	SKquat[0].row3[0] = 0;		SKquat[0].row3[1] = 0;		SKquat[0].row3[2] = 1;		SKquat[0].row3[3] = 0;
+	SKquat[0].row4[0] = 0;		SKquat[0].row4[1] = 0;		SKquat[0].row4[2] = 0;		SKquat[0].row4[3] = 1;
+	BONESquat[0] = SKquat[0];
+	Bone_name[0] = "ROOT";
+	Anim_bones.push_back(0);
+
+    for (unsigned int b = 1; b < nBONES; b++)				// Questo ciclo legge ogni bone e ne applica le trasformazioni mano a mano
     {
         chrfile.read(reinterpret_cast<char*>(&Hierarchy[b]), sizeof(chr_bone.Hierarchy));
         chrfile.read(temp_name, 64);

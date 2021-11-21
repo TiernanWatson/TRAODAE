@@ -30,16 +30,16 @@ void Calculate_Hierarchy (int b,								// Numero della bone a cui applicare le 
 						  vector <unsigned int> Hierarchy,		// Vettore contenente i valori di gerarchia di tutte le bones
 						  vector <matrix4x4> &SKquat)			// Valori di traslazione di ogni bone da applicare ai vertici ed al SubDeformer
 {
-    if (b != 0)
+    if (b != 0 && b != 1)
     {
-		int RootBone = 0;
+		int RootBone = 1;
 		int Ignore = 0;
         if (Hierarchy[b] == 0xC0 || Hierarchy[b] == 0xC1 || Hierarchy[b] == 0x00 || Hierarchy[b] == 0x28 ||			// Questi valori indicano dipendenza dalla bone superiore
             Hierarchy[b] == 0x01 || Hierarchy[b] == 0x0400 || Hierarchy[b] == 0x0401)
             SKquat[b] = mathMulMatrices(SKquat[b], SKquat[b-1]);
         if (Hierarchy[b] == 0x03 || Hierarchy[b] == 0x02)
 		{
-            for (int i = b - 1; i >= 0; i--)
+            for (int i = b - 1; i >= 1; i--)
             {
                 if (Hierarchy[i] == 0x02)
                     Ignore++;
@@ -55,7 +55,7 @@ void Calculate_Hierarchy (int b,								// Numero della bone a cui applicare le 
         }
         if (Hierarchy[b] == 0x403 || Hierarchy[b] == 0x402)
         {
-            for (int i = b - 1; i >= 0; i--)
+            for (int i = b - 1; i >= 1; i--)
             {
                 if (Hierarchy[i] == 0x402)
                     Ignore++;
@@ -71,7 +71,7 @@ void Calculate_Hierarchy (int b,								// Numero della bone a cui applicare le 
         }
         if (Hierarchy[b] == 0xC3 || Hierarchy[b] == 0xC2)
         {
-            for (int i = b - 1; i >= 0; i--)
+            for (int i = b - 1; i >= 1; i--)
             {
                 if (Hierarchy[i] == 0xC2)
                     Ignore++;
@@ -87,7 +87,7 @@ void Calculate_Hierarchy (int b,								// Numero della bone a cui applicare le 
         }
         if (Hierarchy[b] == 0x2A || Hierarchy[b] == 0x2B)
         {
-            for (int i = b; i >= 0; i--)
+            for (int i = b; i >= 1; i--)
                 if (Hierarchy[i] == 0x01)
                 {
                     RootBone = i - 1;

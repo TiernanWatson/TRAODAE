@@ -156,10 +156,11 @@ void UI_Title ()
 	cout << " บ                                                                                                                   บ\n";
 	cout << " บ" << red << "                              Tomb Raider - The Angel of Darkness Animation Exporter                               " << black << "บ\n";
 	cout << " บ" << blue << "                                                  by Nakamichi680                                                  " << black << "บ\n";
+	cout << " บ" << blue << "                                             updated by Tiernan Watson                                             " << black << "บ\n";
 	cout << " บ                                                                                                                   บ\n";
 	cout << " บ" << dark_green << "  For any question, feel free to contact me on http://www.aspidetr.com/forum/ or http://www.tombraiderforums.com/  " << black << "บ\n";
 	cout << " ศอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ\n";
-	cout << dark_purple << "                                                                                                 v. 1.1    2018/03/11\n\n\n" << black;
+	cout << dark_purple << "                                                                                                 v. 1.2    2021/11/21\n\n\n" << black;
 }
 
 

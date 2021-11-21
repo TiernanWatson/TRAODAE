@@ -96,6 +96,10 @@ void CHR_Read_Mesh1 (MESH1_CLASS &mesh1, vector <matrix4x4> &SKquat, ifstream &c
         chrfile.read(reinterpret_cast<char*>(&chr_mesh1_vertex.U), sizeof(chr_mesh1_vertex.U));						// Legge la coordinata U della texture
         chrfile.read(reinterpret_cast<char*>(&chr_mesh1_vertex.V), sizeof(chr_mesh1_vertex.V));						// Legge la coordinata V della texture
 
+		// Due to root bone being added
+		mesh1.Bone1[v]++;
+		mesh1.Bone2[v]++;
+
         X1 = chr_mesh1_vertex.X1 * 0.0625f;					Y1 = chr_mesh1_vertex.Y1 * 0.0625f;					Z1 = chr_mesh1_vertex.Z1 * 0.0625f;
         X2 = chr_mesh1_vertex.X2 * 0.0625f;                 Y2 = chr_mesh1_vertex.Y2 * 0.0625f;                 Z2 = chr_mesh1_vertex.Z2 * 0.0625f;
         X1n = chr_mesh1_vertex.X1n * 0.007874016f;          Y1n = chr_mesh1_vertex.Y1n * 0.007874016f;          Z1n = chr_mesh1_vertex.Z1n * 0.007874016f;

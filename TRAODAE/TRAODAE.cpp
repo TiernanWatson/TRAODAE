@@ -80,6 +80,7 @@ int main(int argc, char **argv)
     chrfile.seekg(4, ios_base::cur);
     chrfile.read(reinterpret_cast<char*>(&chr_header.MESH1_PTR), sizeof(chr_header.MESH1_PTR));
     chrfile.read(reinterpret_cast<char*>(&chr_header.nBONES), sizeof(chr_header.nBONES));
+	++chr_header.nBONES; // For ROOT bone
 	UI_ProgressBar(9, 100, 45, " Reading CHR file...                           ", -1, 1);
 
     // LETTURA SCHELETRO E CALCOLO TRASFORMAZIONI BONES
@@ -128,6 +129,128 @@ int main(int argc, char **argv)
 		{
 			CAL_Read(calfile, Ani_header, Ani_curvenode);
 			calfile.close();
+
+			// Check for mirrored anims
+			for (size_t i = 0; i < Ani_header.size(); ++i)
+			{
+				const Animation_info& info = Ani_header[i];
+
+				std::string name(info.name);
+
+				bool mirrored = name.find("MIRROR") != std::string::npos;
+				if (!mirrored)
+				{
+					continue;
+				}
+
+				// Mirror the animation
+				for (size_t b = 0; b < min(chr_header.nBONES, Ani_curvenode[i].size()); ++b)
+				{
+					AnimationCurveNode& node = Ani_curvenode[i][b];
+
+					// Only want to mirror translation on HIP and ROOT
+					// X = right, Y = forward, Z = up
+					if (b == 0 || b == 1)
+					{
+						if (node.tX_flag)
+						{
+							for (auto& data : node.tX.KeyValueFloat)
+								data *= -1.0f;
+						}
+					}
+
+					// Middle bones, just rotate on self
+					if (b == 0 || b == 1 || (b >= 10 && b <= 14))
+					{
+						for (auto& f : node.rotQuatX)
+							f *= -1.0f;
+						for (auto& f : node.rotQuatY)
+							f *= -1.0f;
+						for (auto& f : node.rotQuatZ)
+							f *= -1.0f;
+
+						if (node.rY_flag)
+						{
+							for (auto& f : node.rY.KeyValueFloat)
+								f *= -1.0f;
+						}
+
+						if (node.rZ_flag)
+						{
+							for (auto& f : node.rZ.KeyValueFloat)
+								f *= -1.0f;
+						}
+					}
+
+					// Limbs, rotate and swap
+					// Minus 10 from arm bones because pony is dynamic and not in animation
+					if ((b >= 2 && b <= 5) || (b >= 15 && b <= 18))
+					{
+						size_t partner_index{ 0 };
+						if (b >= 2 && b <= 5)
+						{
+							partner_index = b + 4;
+						}
+						else
+						{
+							partner_index = b + 18;
+						}
+
+						AnimationCurveNode& partner = Ani_curvenode[i][partner_index];
+
+						std::vector<float> tmpQuatX(node.rotQuatX);
+						std::vector<float> tmpQuatY(node.rotQuatY);
+						std::vector<float> tmpQuatZ(node.rotQuatZ);
+						std::vector<float> tmpEulerX(node.rX.KeyValueFloat);
+						std::vector<float> tmpEulerY(node.rY.KeyValueFloat);
+						std::vector<float> tmpEulerZ(node.rZ.KeyValueFloat);
+
+						node.rotQuatX = partner.rotQuatX;
+						node.rotQuatY = partner.rotQuatY;
+						node.rotQuatZ = partner.rotQuatZ;
+						node.rX.KeyValueFloat = partner.rX.KeyValueFloat;
+						node.rY.KeyValueFloat = partner.rY.KeyValueFloat;
+						node.rZ.KeyValueFloat = partner.rZ.KeyValueFloat;
+
+						partner.rotQuatX = tmpQuatX;
+						partner.rotQuatY = tmpQuatY;
+						partner.rotQuatZ = tmpQuatZ;
+						partner.rX.KeyValueFloat = tmpEulerX;
+						partner.rY.KeyValueFloat = tmpEulerY;
+						partner.rZ.KeyValueFloat = tmpEulerZ;
+
+						for (auto& f : node.rotQuatX)
+							f *= -1.0f;
+						for (auto& f : node.rotQuatY)
+							f *= -1.0f;
+						for (auto& f : node.rotQuatZ)
+							f *= -1.0f;
+
+						for (auto& f : partner.rotQuatX)
+							f *= -1.0f;
+						for (auto& f : partner.rotQuatY)
+							f *= -1.0f;
+						for (auto& f : partner.rotQuatZ)
+							f *= -1.0f;
+
+						if (node.rY_flag)
+						{
+							for (auto& f : node.rY.KeyValueFloat)
+								f *= -1.0f;
+							for (auto& f : partner.rY.KeyValueFloat)
+								f *= -1.0f;
+						}
+
+						if (node.rZ_flag)
+						{
+							for (auto& f : node.rZ.KeyValueFloat)
+								f *= -1.0f;
+							for (auto& f : partner.rZ.KeyValueFloat)
+								f *= -1.0f;
+						}
+					}
+				}
+			}
 		}
 		else
 		{
